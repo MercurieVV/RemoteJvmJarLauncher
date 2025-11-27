@@ -3,6 +3,10 @@ name: Build and Push Docker Image with Jib to GHCR
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'build.gradle.kts'
+      - 'settings.gradle.kts'
   workflow_dispatch:
 
 jobs:

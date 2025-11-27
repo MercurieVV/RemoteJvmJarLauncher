@@ -35,7 +35,7 @@ jib {
         image = "eclipse-temurin:24-jre"
     }
     to {
-        image = "ghcr.io/MercurieVV/RemoteJvmJarLauncher:latest"
+        image = "ghcr.io/mercurievv/remotejvmjarlauncher:latest"
     }
     container {
         mainClass = "io.github.mercurievv.rjjl.Main"
