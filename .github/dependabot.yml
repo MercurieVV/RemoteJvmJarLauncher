@@ -1,29 +1,11 @@
-name: Gradle CI
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "weekly"
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  # optional: nightly build even without PRs
-  schedule:
-    - cron: "0 3 * * *"  # every night at 03:00 UTC
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21   # or 17 / 11 / whatever you use
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
-
-      - name: Build
-        run: ./gradlew build --no-daemon
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
