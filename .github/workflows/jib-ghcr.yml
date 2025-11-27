@@ -31,10 +31,12 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Configure Jib to use GHCR
+      - name: Set image name
         run: |
-          # Optionally, if you want dynamic tag based on commit or tag
-          echo "JIB_IMAGE=ghcr.io/${{ github.repository_owner }}/$(basename $GITHUB_REPOSITORY)" >> $GITHUB_ENV
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          REPO_NAME="$(basename "$GITHUB_REPOSITORY")"
+          REPO_NAME="${REPO_NAME,,}"
+          echo "IMAGE_NAME=ghcr.io/${OWNER}/${REPO_NAME}" >> $GITHUB_ENV
 
       - name: Build and push with Jib
         env:
@@ -42,4 +44,5 @@ jobs:
           JIB_TO_AUTH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ./gradlew jib \
-            -Djib.to.image=$JIB_IMAGE:${GITHUB_SHA::7}
+            -Djib.to.image=$IMAGE_NAME \
+            -Djib.to.tags=${GITHUB_SHA::7}
