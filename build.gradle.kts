@@ -35,15 +35,14 @@ jib {
         image = "eclipse-temurin:24-jre"
     }
     to {
-        // For local Docker use something like this:
-        image = "pf4j-upload-host:latest"
+        image = "ghcr.io/MercurieVV/RemoteJvmJarLauncher:latest"
     }
     container {
-        mainClass = "com.example.host.App"
-        ports = listOf("8080")
+        mainClass = "io.github.mercurievv.rjjl.Main"
+        ports = listOf(System.getProperty("rjjl.port", "8080"))
         environment = mapOf(
-            "PLUGINS_DIR" to "/data/plugins",
-            "HTTP_PORT" to "8080"
+            "PLUGINS_DIR" to System.getProperty("rjjl.pluginsDir", "/data/plugins"),
+            "HTTP_PORT" to System.getProperty("rjjl.port", "8080")
         )
     }
 }

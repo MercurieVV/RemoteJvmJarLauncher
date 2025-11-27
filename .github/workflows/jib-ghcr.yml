@@ -1,0 +1,41 @@
+name: Build and Push Docker Image with Jib to GHCR
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write   # needed for GHCR
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Configure Jib to use GHCR
+        run: |
+          # Optionally, if you want dynamic tag based on commit or tag
+          echo "JIB_IMAGE=ghcr.io/${{ github.repository_owner }}/$(basename $GITHUB_REPOSITORY)" >> $GITHUB_ENV
+
+      - name: Build and push with Jib
+        env:
+          JIB_TO_AUTH_USERNAME: ${{ github.actor }}
+          JIB_TO_AUTH_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ./gradlew jib \
+            -Djib.to.image=$JIB_IMAGE:${GITHUB_SHA::7}
