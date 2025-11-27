@@ -1,7 +1,7 @@
 plugins {
     id("java")
     application
-    id("com.google.cloud.tools.jib") version "3.4.3"
+    id("com.google.cloud.tools.jib") version "3.5.1"
 }
 
 group = "org.example"
@@ -33,6 +33,16 @@ dependencies {
 jib {
     from {
         image = "eclipse-temurin:24-jre"
+        platforms {
+            platform {
+                architecture = "arm64"
+                os = "linux"
+            }
+            platform {
+                architecture = "amd64"
+                os = "linux"
+            }
+        }
     }
     to {
         image = "ghcr.io/mercurievv/remotejvmjarlauncher:latest"
