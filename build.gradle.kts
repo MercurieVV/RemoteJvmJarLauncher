@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    val pf4jVersion = "3.13.0"
+    val pf4jVersion = "3.14.0"
     val javalinVersion = "5.4.2"   // any 5.x is fine
     val slf4jVersion = "2.0.17"
 
