@@ -18,7 +18,7 @@ public class Main {
         // Config: PLUGINS_DIR env var or default ./plugins
         String pluginsDirEnv = System.getenv().getOrDefault("PLUGINS_DIR", "./plugins");
         Path pluginsDir = Paths.get(pluginsDirEnv).toAbsolutePath();
-        int port = Integer.parseInt(System.getenv().getOrDefault("HTTP_PORT", "8080"));
+        int port = Integer.parseInt(System.getenv().getOrDefault("HTTP_PORT", "8666"));
 
         Files.createDirectories(pluginsDir);
         log.info("Using plugins directory: {}", pluginsDir);

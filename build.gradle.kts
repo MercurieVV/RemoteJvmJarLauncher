@@ -49,10 +49,10 @@ jib {
     }
     container {
         mainClass = "io.github.mercurievv.rjjl.Main"
-        ports = listOf(System.getProperty("rjjl.port", "8080"))
+        ports = listOf(System.getProperty("rjjl.port", "8666"))
         environment = mapOf(
             "PLUGINS_DIR" to System.getProperty("rjjl.pluginsDir", "/data/plugins"),
-            "HTTP_PORT" to System.getProperty("rjjl.port", "8080")
+            "HTTP_PORT" to System.getProperty("rjjl.port", "8666")
         )
     }
 }
