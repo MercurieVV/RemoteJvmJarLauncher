@@ -2,8 +2,6 @@ package io.github.mercurievv.rjjl;
 
 
 import io.javalin.Javalin;
-import io.javalin.apibuilder.ApiBuilder;
-import io.javalin.apibuilder.ApiBuilder.*;
 import io.javalin.http.Context;
 import io.javalin.http.UnauthorizedResponse;
 import io.javalin.http.UploadedFile;
@@ -18,7 +16,6 @@ import org.pf4j.PluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 
@@ -29,7 +26,8 @@ public class Main {
         // Config: PLUGINS_DIR env var or default ./plugins
         String pluginsDirEnv = System.getenv().getOrDefault("PLUGINS_DIR", "./plugins");
         Path pluginsDir = Paths.get(pluginsDirEnv).toAbsolutePath();
-        int port = Integer.parseInt(System.getenv().getOrDefault("HTTP_PORT", "8666"));
+        int internalPort = Integer.parseInt(System.getenv().getOrDefault("INTERNAL_HTTP_PORT", "8666"));
+        int externalPort = Integer.parseInt(System.getenv().getOrDefault("EXTERNAL_HTTP_PORT", "8777"));
 
         Files.createDirectories(pluginsDir);
         log.info("Using plugins directory: {}", pluginsDir);
@@ -49,22 +47,25 @@ public class Main {
         pluginManager.startPlugins();
         log.info("Initial plugins loaded and started.");
 
-        Javalin httpServer = startHttpServer(port, authToken, pluginsDir, pluginManager);
+        Javalin internalServer = startHttpServer(internalPort, pluginsDir, pluginManager);
+        Javalin externalServer = createAuth(
+                startHttpServer(externalPort, pluginsDir, pluginManager),
+                authToken
+        );
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             log.info("Shutting down, stopping plugins...");
             pluginManager.stopPlugins();
             pluginManager.unloadPlugins();
-            httpServer.stop();
+            internalServer.stop();
+            externalServer.stop();
             log.info("RJJL Stopped");
         }));
     }
 
-    private static Javalin startHttpServer(int port, String authToken, Path pluginsDir, PluginManager pluginManager) {
+    private static Javalin startHttpServer(int port, Path pluginsDir, PluginManager pluginManager) {
         FileController files = new FileController(pluginManager, pluginsDir);
         ObjectMapper objectMapper = new ObjectMapper();
-
-        // Javalin HTTP server
 
         Javalin app = Javalin.create(config -> {
             config.showJavalinBanner = false;
@@ -75,23 +76,25 @@ public class Main {
                 staticCfg.precompress = false;
             });
             config.router.apiBuilder(() -> {
-                path("api", () -> fileRoutes(files));      // internal (Ingress)
-                path("ext-api", () -> fileRoutes(files));  // external (token protected)
+                fileRoutes(files);
             });
             config.jsonMapper(new JavalinJackson(objectMapper, true));
         }).start(port);
 
         log.info("HTTP server started on port {}", port);
+        return app;
+    }
 
-        // ---- AUTH MIDDLEWARE ----
-        app.before("/ext-api/*", ctx -> {
-            String path = ctx.path();
-
+    private static Javalin createAuth(Javalin app, String authToken) {
+        // ---- AUTH MIDDLEWARE (all routes on the external server) ----
+        app.before(ctx -> {
             // public endpoints
-            if (path.equals("/health")) return;
-            //if (ctx.method().equals("GET") && path.equals("/plugins")) return;
+            if (ctx.path().equals("/health")) return;
 
-            // protected endpoints (upload, future admin calls)
+            if (authToken == null || authToken.isBlank()) {
+                throw new UnauthorizedResponse("AUTH_TOKEN is not configured");
+            }
+
             String header = ctx.header("Authorization");
             if (header == null || !header.startsWith("Bearer ")) {
                 throw new UnauthorizedResponse("Missing Authorization header");
@@ -103,11 +106,7 @@ public class Main {
                 throw new UnauthorizedResponse("Invalid token");
             }
         });
-
         // ---- END AUTH ----
-
-
-        // Mount the same file routes under BOTH prefixes
 
         return app;
     }

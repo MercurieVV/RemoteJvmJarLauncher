@@ -48,12 +48,34 @@ jib {
     to {
         image = "ghcr.io/mercurievv/remotejvmjarlauncher:latest"
     }
+    val internalPort = System.getProperty("rjjl.internalPort", "8666")
+    val externalPort = System.getProperty("rjjl.externalPort", "8777")
     container {
         mainClass = "io.github.mercurievv.rjjl.Main"
-        ports = listOf(System.getProperty("rjjl.port", "8666"))
+        ports = listOf(internalPort, externalPort)
         environment = mapOf(
             "PLUGINS_DIR" to System.getProperty("rjjl.pluginsDir", "/data/plugins"),
-            "HTTP_PORT" to System.getProperty("rjjl.port", "8666")
+            "INTERNAL_HTTP_PORT" to internalPort,
+            "EXTERNAL_HTTP_PORT" to externalPort,
         )
     }
 }
+/*
+sourceSets {
+    create("intTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+
+val intTestImplementation by configurations.getting {
+    extendsFrom(configurations.implementation.get())
+}
+val intTestRuntimeOnly by configurations.getting
+
+configurations["intTestRuntimeOnly"].extendsFrom(configurations.runtimeOnly.get())
+
+dependencies {
+    intTestImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
+    intTestRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}*/
