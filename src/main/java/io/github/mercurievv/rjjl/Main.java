@@ -2,12 +2,23 @@ package io.github.mercurievv.rjjl;
 
 
 import io.javalin.Javalin;
+import io.javalin.apibuilder.ApiBuilder;
+import io.javalin.apibuilder.ApiBuilder.*;
+import io.javalin.http.Context;
 import io.javalin.http.UnauthorizedResponse;
+import io.javalin.http.UploadedFile;
+import io.javalin.http.staticfiles.Location;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import static io.javalin.apibuilder.ApiBuilder.*;
+
+import io.javalin.json.JavalinJackson;
 import org.pf4j.DefaultPluginManager;
 import org.pf4j.PluginManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 
@@ -50,15 +61,30 @@ public class Main {
     }
 
     private static Javalin startHttpServer(int port, String authToken, Path pluginsDir, PluginManager pluginManager) {
+        FileController files = new FileController(pluginManager, pluginsDir);
+        ObjectMapper objectMapper = new ObjectMapper();
+
         // Javalin HTTP server
+
         Javalin app = Javalin.create(config -> {
             config.showJavalinBanner = false;
+            config.staticFiles.add(staticCfg -> {
+                staticCfg.hostedPath = "/";
+                staticCfg.directory = "/public";
+                staticCfg.location = Location.CLASSPATH;
+                staticCfg.precompress = false;
+            });
+            config.router.apiBuilder(() -> {
+                path("api", () -> fileRoutes(files));      // internal (Ingress)
+                path("ext-api", () -> fileRoutes(files));  // external (token protected)
+            });
+            config.jsonMapper(new JavalinJackson(objectMapper, true));
         }).start(port);
 
         log.info("HTTP server started on port {}", port);
 
         // ---- AUTH MIDDLEWARE ----
-        app.before(ctx -> {
+        app.before("/ext-api/*", ctx -> {
             String path = ctx.path();
 
             // public endpoints
@@ -80,24 +106,49 @@ public class Main {
 
         // ---- END AUTH ----
 
-        // Health check
-        app.get("/health", ctx -> ctx.result("OK"));
 
-        // Upload endpoint:
-        //   POST /plugins/upload/{fileName}
-        //   Body: binary JAR bytes
-        app.post("/plugins/upload/{fileName}", ctx -> {
-            String fileName = ctx.pathParam("fileName");
-            if (!fileName.endsWith(".jar")) {
-                fileName = fileName + ".jar";
+        // Mount the same file routes under BOTH prefixes
+
+        return app;
+    }
+
+
+    private static void fileRoutes(FileController files) {
+        get("plugins", files::list);
+        post("plugins", files::upload);
+        delete("plugins/{fileName}", files::delete);
+        get("/health", ctx -> ctx.result("OK"));
+    }
+
+    public static class FileController {
+        public PluginManager pluginManager;
+        public Path pluginsDir;
+
+        FileController(PluginManager pluginManager, Path pluginsDir) {
+            this.pluginManager = pluginManager;
+            this.pluginsDir = pluginsDir;
+        }
+
+        void list(Context ctx) throws Exception {
+            var ids = pluginManager.getPlugins().stream()
+                    .map(p -> p.getDescriptor().getPluginId() + ":" + p.getDescriptor().getVersion())
+                    .toList();
+            ctx.json(ids);
+        }
+
+        void upload(Context ctx) throws Exception {
+            UploadedFile file = ctx.uploadedFile("file");
+            if (file == null) {
+                ctx.status(400).result("No file");
+                return;
             }
 
-            Path target = pluginsDir.resolve(fileName);
+            String filename = file.filename(); // <-- original filename
+            InputStream content = file.content();
+            Path target = pluginsDir.resolve(filename);
             log.info("Uploading plugin JAR to {}", target);
 
-            try (InputStream in = ctx.bodyInputStream()) {
-                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
-            }
+            Files.copy(content, target, StandardCopyOption.REPLACE_EXISTING);
 
             // Load and start the plugin
             String pluginId = pluginManager.loadPlugin(target);
@@ -105,15 +156,11 @@ public class Main {
 
             log.info("Plugin loaded and started: {}", pluginId);
             ctx.result("Uploaded and started plugin: " + pluginId);
-        });
+        }
 
-        // List plugins
-        app.get("/plugins", ctx -> {
-            var ids = pluginManager.getPlugins().stream()
-                    .map(p -> p.getDescriptor().getPluginId() + ":" + p.getDescriptor().getVersion())
-                    .toList();
-            ctx.json(ids);
-        });
-        return app;
+        void delete(Context ctx) throws Exception {
+
+        }
+        //void download(Context ctx) throws Exception;
     }
 }
