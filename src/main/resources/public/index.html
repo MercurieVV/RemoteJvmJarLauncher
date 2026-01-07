@@ -35,7 +35,7 @@
     const msg = (t) => document.getElementById("msg").textContent = t;
 
     async function refresh() {
-        const res = await fetch("/api/plugins");
+        const res = await fetch("./api/plugins");
         const files = await res.json();
         const tbody = document.getElementById("tbody");
         tbody.innerHTML = "";
@@ -44,7 +44,7 @@
 
             const tdName = document.createElement("td");
             const a = document.createElement("a");
-            a.href = "/api/plugins/" + encodeURIComponent(f);
+            a.href = "./api/plugins/" + encodeURIComponent(f);
             a.textContent = f;
             tdName.appendChild(a);
 
@@ -55,7 +55,7 @@
             const del = document.createElement("button");
             del.textContent = "Delete";
             del.onclick = async () => {
-                const r = await fetch("/api/plugins/" + encodeURIComponent(f), { method: "DELETE" });
+                const r = await fetch("./api/plugins/" + encodeURIComponent(f), { method: "DELETE" });
                 if (r.status === 204) msg("Deleted " + f);
                 else msg("Delete failed: " + (await r.text()));
                 refresh();
@@ -77,7 +77,7 @@
         const fd = new FormData();
         fd.append("file", input.files[0]);
 
-        const r = await fetch("/api/plugins", { method: "POST", body: fd });
+        const r = await fetch("./api/plugins", { method: "POST", body: fd });
         if (r.ok) msg("Uploaded.");
         else msg("Upload failed: " + (await r.text()));
         input.value = "";
