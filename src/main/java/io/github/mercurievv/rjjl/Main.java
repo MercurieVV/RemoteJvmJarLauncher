@@ -161,7 +161,7 @@ public class Main {
             String pluginId = ctx.pathParam("pluginId").replaceFirst(":.+$", ""); // remove version if present
             pluginManager.stopPlugin(pluginId);
             pluginManager.deletePlugin(pluginId);
-            log.info("Plugin deleted: {}", pluginId);
+            log.info("Plugin deletted: {}", pluginId);
         }
     }
 }
