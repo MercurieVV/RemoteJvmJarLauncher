@@ -115,7 +115,7 @@ public class Main {
     private static void fileRoutes(FileController files) {
         get("plugins", files::list);
         post("plugins", files::upload);
-        delete("plugins/{fileName}", files::delete);
+        delete("plugins/{pluginId}", files::delete);
         get("/health", ctx -> ctx.result("OK"));
     }
 
@@ -158,7 +158,9 @@ public class Main {
         }
 
         void delete(Context ctx) throws Exception {
-
+            String pluginId = ctx.pathParam("pluginId");
+            pluginManager.stopPlugin(pluginId);
+            pluginManager.deletePlugin(pluginId);
         }
         //void download(Context ctx) throws Exception;
     }
