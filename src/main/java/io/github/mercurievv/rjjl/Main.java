@@ -158,7 +158,7 @@ public class Main {
         }
 
         void delete(Context ctx) throws Exception {
-            String pluginId = ctx.pathParam("pluginId");
+            String pluginId = ctx.pathParam("pluginId").replaceFirst(":.+$", ""); // remove version if present
             pluginManager.stopPlugin(pluginId);
             pluginManager.deletePlugin(pluginId);
         }
