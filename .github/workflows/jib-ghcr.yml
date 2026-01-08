@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Set up JDK
         uses: actions/setup-java@v5
@@ -52,10 +52,12 @@ jobs:
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
             # Expect tags like v1.2.3; strip leading 'v'
             RELEASE_VERSION="${GITHUB_REF_NAME#v}"
+            # Release build: publish immutable version tag and move 'latest'
             TAGS="${RELEASE_VERSION},latest"
           else
-            # Branch build (main): version + commit for traceability
-            TAGS="${GRADLE_VERSION}-${SHORT_SHA},latest"
+            # Branch build (main): publish immutable SHA tag plus a moving 'edge' tag
+            # (best practice: do not move 'latest' on non-release builds)
+            TAGS="${GRADLE_VERSION}-${SHORT_SHA},edge"
           fi
 
           echo "JIB_TAGS=${TAGS}" >> $GITHUB_ENV
