@@ -162,6 +162,5 @@ public class Main {
             pluginManager.stopPlugin(pluginId);
             pluginManager.deletePlugin(pluginId);
         }
-        //void download(Context ctx) throws Exception;
     }
 }
