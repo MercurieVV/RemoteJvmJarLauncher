@@ -157,7 +157,7 @@ public class Main {
             ctx.result("Uploaded and started plugin: " + pluginId);
         }
 
-        void delete(Context ctx) throws Exception {
+        void delete(Context ctx) {
             String pluginId = ctx.pathParam("pluginId").replaceFirst(":.+$", ""); // remove version if present
             pluginManager.stopPlugin(pluginId);
             pluginManager.deletePlugin(pluginId);
