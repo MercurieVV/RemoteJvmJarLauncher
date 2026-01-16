@@ -162,12 +162,12 @@ public class Main {
             try {
                 pluginManager.stopPlugin(pluginId);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
             try {
                 pluginManager.deletePlugin(pluginId);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
             log.info("Plugin deletted: {}", pluginId);
         }
