@@ -145,7 +145,7 @@ public class Main {
             String filename = file.filename(); // <-- original filename
             InputStream content = file.content();
             Path target = pluginsDir.resolve(filename);
-            log.info("Uploading plugin JAR to {}", target);
+            log.info("Uploading file to {}", target);
 
             Files.copy(content, target, StandardCopyOption.REPLACE_EXISTING);
 
