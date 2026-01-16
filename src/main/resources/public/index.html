@@ -1,23 +1,97 @@
 <!doctype html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>File Service</title>
     <style>
-        body { font-family: system-ui, sans-serif; max-width: 900px; margin: 24px auto; padding: 0 12px; }
-        .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
-        button { cursor: pointer; }
-        code { background: #f6f6f6; padding: 2px 6px; border-radius: 6px; }
+        :root {
+            color-scheme: light dark;
+            --bg: #ffffff;
+            --text: #111111;
+            --muted: #666666;
+            --border: #dddddd;
+            --surface: #f6f6f6;
+            --link: #0b66c3;
+            --btn-bg: #f2f2f2;
+            --btn-border: #cccccc;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f1115;
+                --text: #e6e6e6;
+                --muted: #a0a0a0;
+                --border: #2a2f3a;
+                --surface: #1b202a;
+                --link: #7ab4ff;
+                --btn-bg: #1b202a;
+                --btn-border: #2a2f3a;
+            }
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 900px;
+            margin: 24px auto;
+            padding: 0 12px;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        a {
+            color: var(--link);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        th, td {
+            border-bottom: 1px solid var(--border);
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        button {
+            cursor: pointer;
+            background: var(--btn-bg);
+            color: var(--text);
+            border: 1px solid var(--btn-border);
+            border-radius: 8px;
+            padding: 6px 10px;
+        }
+
+        input[type="file"] {
+            color: var(--text);
+        }
+
+        code {
+            background: var(--surface);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
     </style>
 </head>
 <body>
 <h1>File Service</h1>
 
 <div class="row">
-    <input id="file" type="file" />
+    <input id="file" type="file"/>
     <button id="upload">Upload</button>
     <button id="refresh">Refresh list</button>
 </div>
@@ -26,7 +100,11 @@
 
 <table>
     <thead>
-    <tr><th>Name</th><th>Size</th><th>Actions</th></tr>
+    <tr>
+        <th>Name</th>
+        <th>Size</th>
+        <th>Actions</th>
+    </tr>
     </thead>
     <tbody id="tbody"></tbody>
 </table>
@@ -55,7 +133,7 @@
             const del = document.createElement("button");
             del.textContent = "Delete";
             del.onclick = async () => {
-                const r = await fetch("./plugins/" + encodeURIComponent(f), { method: "DELETE" });
+                const r = await fetch("./plugins/" + encodeURIComponent(f), {method: "DELETE"});
                 if (r.status === 204) msg("Deleted " + f);
                 else msg("Delete failed: " + (await r.text()));
                 refresh();
@@ -73,11 +151,14 @@
 
     document.getElementById("upload").onclick = async () => {
         const input = document.getElementById("file");
-        if (!input.files || input.files.length === 0) { msg("Choose a file first."); return; }
+        if (!input.files || input.files.length === 0) {
+            msg("Choose a file first.");
+            return;
+        }
         const fd = new FormData();
         fd.append("file", input.files[0]);
 
-        const r = await fetch("./plugins", { method: "POST", body: fd });
+        const r = await fetch("./plugins", {method: "POST", body: fd});
         if (r.ok) msg("Uploaded.");
         else msg("Upload failed: " + (await r.text()));
         input.value = "";
