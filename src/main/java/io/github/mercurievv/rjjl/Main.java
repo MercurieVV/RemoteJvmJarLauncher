@@ -159,8 +159,16 @@ public class Main {
 
         void delete(Context ctx) {
             String pluginId = ctx.pathParam("pluginId").replaceFirst(":.+$", ""); // remove version if present
-            pluginManager.stopPlugin(pluginId);
-            pluginManager.deletePlugin(pluginId);
+            try {
+                pluginManager.stopPlugin(pluginId);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            try {
+                pluginManager.deletePlugin(pluginId);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             log.info("Plugin deletted: {}", pluginId);
         }
     }
