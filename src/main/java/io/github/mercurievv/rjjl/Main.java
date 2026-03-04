@@ -38,19 +38,9 @@ public class Main {
         }
 
 
-        // PF4J plugin manager — PARENT_LAST gives each plugin an isolated classloader,
+        // PF4J plugin manager — PDA (plugin-first) is already the default in pf4j 3.14.0,
         // so plugins can use their own logging/libraries independently of the host.
-        PluginManager pluginManager = new DefaultPluginManager(pluginsDir) {
-            @Override
-            protected PluginLoader createPluginLoader() {
-                return new DefaultPluginLoader(this) {
-                    @Override
-                    protected PluginClassLoader createPluginClassLoader(Path pluginPath, PluginDescriptor pluginDescriptor) {
-                        return new PluginClassLoader(pluginManager, pluginDescriptor, getClass().getClassLoader(), ClassLoadingStrategy.PDA);
-                    }
-                };
-            }
-        };
+        PluginManager pluginManager = new DefaultPluginManager(pluginsDir);
 
         // Initial scan (load already-present plugins)
         pluginManager.loadPlugins();
