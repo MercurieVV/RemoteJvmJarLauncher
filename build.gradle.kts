@@ -22,7 +22,7 @@ repositories {
 
 dependencies {
     val pf4jVersion = "3.14.0"
-    val javalinVersion = "6.7.0"   // any 5.x is fine
+    val javalinVersion = "7.0.1"   // any 5.x is fine
     implementation("org.pf4j:pf4j:$pf4jVersion")
     implementation("io.javalin:javalin:$javalinVersion")
     implementation("ch.qos.logback:logback-classic:1.5.18")
