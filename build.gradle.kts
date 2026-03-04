@@ -9,7 +9,7 @@ version = "1.0-SNAPSHOT"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(24))
+        languageVersion.set(JavaLanguageVersion.of(25))
     }
 }
 application {
@@ -23,11 +23,9 @@ repositories {
 dependencies {
     val pf4jVersion = "3.14.0"
     val javalinVersion = "6.7.0"   // any 5.x is fine
-    val slf4jVersion = "2.0.17"
-
     implementation("org.pf4j:pf4j:$pf4jVersion")
     implementation("io.javalin:javalin:$javalinVersion")
-    implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+    implementation("ch.qos.logback:logback-classic:1.5.18")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
 }
 

@@ -11,8 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import static io.javalin.apibuilder.ApiBuilder.*;
 
 import io.javalin.json.JavalinJackson;
-import org.pf4j.DefaultPluginManager;
-import org.pf4j.PluginManager;
+import org.pf4j.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +38,19 @@ public class Main {
         }
 
 
-        // PF4J plugin manager
-        PluginManager pluginManager = new DefaultPluginManager(pluginsDir);
+        // PF4J plugin manager — PARENT_LAST gives each plugin an isolated classloader,
+        // so plugins can use their own logging/libraries independently of the host.
+        PluginManager pluginManager = new DefaultPluginManager(pluginsDir) {
+            @Override
+            protected PluginLoader createPluginLoader() {
+                return new DefaultPluginLoader(this) {
+                    @Override
+                    protected PluginClassLoader createPluginClassLoader(Path pluginPath, PluginDescriptor pluginDescriptor) {
+                        return new PluginClassLoader(pluginManager, pluginDescriptor, getClass().getClassLoader(), ClassLoadingStrategy.PDA);
+                    }
+                };
+            }
+        };
 
         // Initial scan (load already-present plugins)
         pluginManager.loadPlugins();
@@ -116,6 +126,7 @@ public class Main {
         get("plugins", files::list);
         post("plugins", files::upload);
         delete("plugins/{pluginId}", files::delete);
+        post("plugins/{pluginId}/delete", files::delete);
         get("/health", ctx -> ctx.result("OK"));
     }
 
