@@ -26,7 +26,7 @@ dependencies {
     implementation("org.pf4j:pf4j:$pf4jVersion")
     implementation("io.javalin:javalin:$javalinVersion")
     implementation("ch.qos.logback:logback-classic:1.5.18")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.21.1")
 }
 
 jib {
