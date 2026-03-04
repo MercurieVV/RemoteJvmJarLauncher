@@ -78,14 +78,12 @@ public class Main {
         ObjectMapper objectMapper = new ObjectMapper();
 
         Javalin app = Javalin.create(config -> {
-            config.showJavalinBanner = false;
             config.staticFiles.add(staticCfg -> {
                 staticCfg.hostedPath = "/";
                 staticCfg.directory = "/public";
                 staticCfg.location = Location.CLASSPATH;
-                staticCfg.precompress = false;
             });
-            config.router.apiBuilder(() -> {
+            config.routes.apiBuilder(() -> {
                 fileRoutes(files);
             });
             config.jsonMapper(new JavalinJackson(objectMapper, true));
@@ -97,7 +95,7 @@ public class Main {
 
     private static Javalin createAuth(Javalin app, String authToken) {
         // ---- AUTH MIDDLEWARE (all routes on the external server) ----
-        app.before(ctx -> {
+        app.unsafe.routes.before(ctx -> {
             // public endpoints
             if (ctx.path().equals("/health")) return;
 
