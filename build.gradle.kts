@@ -25,7 +25,7 @@ dependencies {
     val javalinVersion = "7.0.1"   // any 5.x is fine
     implementation("org.pf4j:pf4j:$pf4jVersion")
     implementation("io.javalin:javalin:$javalinVersion")
-    implementation("ch.qos.logback:logback-classic:1.5.18")
+    implementation("ch.qos.logback:logback-classic:1.5.32")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.21.1")
 }
 
